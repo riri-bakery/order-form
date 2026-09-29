@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <title>주문 금액 계산기 · Riri Bakery</title>
-<link rel="stylesheet" href="./css/styles.css?v=20260929-design-row-wrap">
+<link rel="stylesheet" href="./css/styles.css?v=20260929-compact-summary">
 
 <div class="wrap order-calc-page">
   <header>
@@ -48,8 +48,20 @@
       <div class="order-total" id="amountDue">0원</div>
 
       <dl class="order-breakdown">
-        <div><dt>제작금액</dt><dd id="grossAmount">0원</dd></div>
-        <div><dt>옵션 금액</dt><dd id="optionAmount">0원</dd></div>
+        <div class="breakdown-block">
+          <dt>제작금액</dt>
+          <dd>
+            <strong id="grossAmount">0원</strong>
+            <small id="productBreakdown">도안을 추가하면 표시됩니다.</small>
+          </dd>
+        </div>
+        <div class="breakdown-block">
+          <dt>옵션 금액</dt>
+          <dd>
+            <strong id="optionAmount">0원</strong>
+            <small id="optionBreakdown">선택 옵션 없음</small>
+          </dd>
+        </div>
         <div><dt>배송비</dt><dd id="shippingAmount">0원</dd></div>
         <div><dt>총 수량</dt><dd id="totalQty">0개</dd></div>
       </dl>
@@ -90,4 +102,4 @@
   </div>
 </template>
 
-<script src="./js/order-calculator.js?v=20260929-copy-line-summary"></script>
+<script src="./js/order-calculator.js?v=20260929-compact-summary"></script>

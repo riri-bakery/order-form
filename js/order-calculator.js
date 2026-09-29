@@ -11,6 +11,8 @@ const addDesignRowButton = document.getElementById('addDesignRow');
 const amountDueEl = document.getElementById('amountDue');
 const grossAmountEl = document.getElementById('grossAmount');
 const optionAmountEl = document.getElementById('optionAmount');
+const productBreakdownEl = document.getElementById('productBreakdown');
+const optionBreakdownEl = document.getElementById('optionBreakdown');
 const shippingAmountEl = document.getElementById('shippingAmount');
 const totalQtyEl = document.getElementById('totalQty');
 const summaryTextEl = document.getElementById('summaryText');
@@ -78,28 +80,40 @@ function buildCopyLine(items, shipping, due){
     keyringTotal += item.keyringTotal;
   });
 
-  parts.push(`색상 변경 ${colorQty}개(${won(colorTotal)})`);
-  parts.push(`키링 추가 ${keyringQty}개(${won(keyringTotal)})`);
-  parts.push(`배송비(${won(shipping)})`);
+  if(colorTotal > 0) parts.push(`색상 변경 ${colorQty}개(${won(colorTotal)})`);
+  if(keyringTotal > 0) parts.push(`키링 추가 ${keyringQty}개(${won(keyringTotal)})`);
+  if(shipping > 0) parts.push(`배송비(${won(shipping)})`);
   return `${parts.join(' + ')} = 총 ${won(due)}`;
 }
 
-function buildSummary(items, productTotal, optionTotal, shipping, due){
+function buildProductBreakdown(items){
   if(!items.length) return '도안을 추가하면 주문 요약이 표시됩니다.';
-  const lines = items.map((item, index)=>{
-    const options = [];
-    if(item.colorQty) options.push(`색상 변경 ${item.colorQty}개`);
-    if(item.keyringQty) options.push(`키링 ${item.keyringQty}개`);
-    const optionText = options.length ? ` · ${options.join(' · ')}` : '';
-    return `${index + 1}. ${item.type} · ${item.name} · 제작 ${item.qty}개${optionText} = ${won(item.total)}`;
+  return items.map(item=>`${item.name} ${item.qty}개 ${won(item.productTotal)}`).join('\n');
+}
+
+function buildOptionBreakdown(items){
+  let colorQty = 0;
+  let colorTotal = 0;
+  let keyringQty = 0;
+  let keyringTotal = 0;
+
+  items.forEach(item=>{
+    colorQty += item.colorQty;
+    colorTotal += item.colorTotal;
+    keyringQty += item.keyringQty;
+    keyringTotal += item.keyringTotal;
   });
+
+  const lines = [];
+  if(colorTotal > 0) lines.push(`색상 변경 ${colorQty}개 ${won(colorTotal)}`);
+  if(keyringTotal > 0) lines.push(`키링 추가 ${keyringQty}개 ${won(keyringTotal)}`);
+  return lines.length ? lines.join('\n') : '선택 옵션 없음';
+}
+
+function buildSummary(items, shipping, due){
+  if(!items.length) return '도안을 추가하면 주문 요약이 표시됩니다.';
   copyLineText = buildCopyLine(items, shipping, due);
-  lines.push(`제작금액: ${won(productTotal)}`);
-  lines.push(`옵션 금액: ${won(optionTotal)}`);
-  lines.push(`배송비: ${won(shipping)}`);
-  lines.push(`총 금액: ${won(due)}`);
-  lines.push(copyLineText);
-  return lines.join('\n');
+  return copyLineText;
 }
 
 function updateCalculator(){
@@ -122,10 +136,12 @@ function updateCalculator(){
   const due = productTotal + optionTotal + shipping;
   grossAmountEl.textContent = won(productTotal);
   optionAmountEl.textContent = won(optionTotal);
+  productBreakdownEl.textContent = buildProductBreakdown(items);
+  optionBreakdownEl.textContent = buildOptionBreakdown(items);
   shippingAmountEl.textContent = won(shipping);
   totalQtyEl.textContent = qty.toLocaleString('ko-KR')+'개';
   amountDueEl.textContent = won(due);
-  summaryTextEl.textContent = buildSummary(items, productTotal, optionTotal, shipping, due);
+  summaryTextEl.textContent = buildSummary(items, shipping, due);
   copySummaryButton.disabled = !items.length || due <= 0;
 }
 

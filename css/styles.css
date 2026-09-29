@@ -257,10 +257,21 @@ h2{
   padding:11px 0;
   border-bottom:1px solid var(--line);
 }
+.order-breakdown .breakdown-block{align-items:flex-start}
 .order-breakdown dt{color:var(--muted);font-size:14px}
-.order-breakdown dd{margin:0;color:var(--chocolate);font-weight:900}
+.order-breakdown dd{margin:0;color:var(--chocolate);font-weight:900;text-align:right}
+.order-breakdown dd strong{display:block}
+.order-breakdown dd small{
+  display:block;
+  margin-top:5px;
+  color:var(--muted);
+  font-size:12px;
+  font-weight:400;
+  line-height:1.55;
+  white-space:pre-line;
+}
 .order-summary-text{
-  min-height:156px;
+  min-height:0;
   padding:15px;
   border:1px solid var(--line);
   border-radius:2px;
