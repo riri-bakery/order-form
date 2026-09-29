@@ -158,15 +158,23 @@ h2{
 .order-design-list{display:grid;gap:10px;margin-top:18px}
 .order-design-row{
   display:grid;
-  grid-template-columns:minmax(180px,1.4fr) minmax(82px,.45fr) minmax(108px,.55fr) minmax(82px,.45fr) minmax(120px,.72fr) auto;
+  grid-template-columns:minmax(180px,1.4fr) minmax(82px,.42fr) minmax(108px,.52fr) minmax(82px,.42fr) auto;
+  grid-template-areas:
+    "name qty color keyring remove"
+    "total total total total remove";
   gap:10px;
   align-items:end;
   padding:14px;
   border:1px solid var(--line);
   border-radius:2px;
   background:white;
+  min-width:0;
 }
 .order-design-row label,.design-row-total{display:grid;gap:6px;min-width:0}
+.order-design-row label:nth-of-type(1){grid-area:name}
+.order-design-row label:nth-of-type(2){grid-area:qty}
+.order-design-row label:nth-of-type(3){grid-area:color}
+.order-design-row label:nth-of-type(4){grid-area:keyring}
 .order-design-row span,.design-row-total span{
   color:var(--muted);
   font-size:12px;
@@ -185,19 +193,25 @@ h2{
 }
 .order-design-row input::placeholder{color:#9a8f84;font-weight:700}
 .design-row-total{
+  grid-area:total;
   min-height:50px;
-  justify-content:center;
-  padding:0 10px;
-  border-left:1px solid rgba(169,189,199,.65);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:12px 0 0;
+  border-top:1px solid rgba(169,189,199,.65);
 }
 .design-row-total strong{
   color:var(--caramel-dark);
-  font-size:16px;
+  font-size:18px;
   white-space:nowrap;
 }
 .remove-design{
+  grid-area:remove;
+  align-self:stretch;
   min-width:62px;
-  min-height:50px;
+  min-height:100%;
   background:rgba(255,255,255,.68);
   color:var(--cocoa);
   border-color:var(--line);
@@ -273,13 +287,29 @@ h2{
   .order-calc-head{display:grid}
   .mini-btn{width:100%}
   .order-design-row{grid-template-columns:1fr 1fr}
-  .order-design-row label:first-child,.design-row-total,.remove-design{grid-column:1 / -1}
-  .design-row-total{border-left:0;border-top:1px solid rgba(169,189,199,.65);padding:10px 0 0}
+  .order-design-row{
+    grid-template-areas:
+      "name name"
+      "qty color"
+      "keyring keyring"
+      "total total"
+      "remove remove";
+  }
+  .remove-design{min-height:46px}
 }
 @media(max-width:520px){
   .order-input-card,.order-summary-card{padding:18px}
   .order-fixed-type{display:grid}
   .order-fixed-type b{text-align:left}
-  .order-design-row{grid-template-columns:1fr}
+  .order-design-row{
+    grid-template-columns:1fr;
+    grid-template-areas:
+      "name"
+      "qty"
+      "color"
+      "keyring"
+      "total"
+      "remove";
+  }
   .actions{grid-template-columns:1fr}
 }
