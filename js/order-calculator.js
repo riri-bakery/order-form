@@ -25,16 +25,10 @@ function won(value){
   return Math.round(value).toLocaleString('ko-KR')+'원';
 }
 
-function clampQty(value){
+function normalizedNumber(value, min, max, fallback){
   const qty = Math.floor(Number(value));
-  if(!Number.isFinite(qty) || qty < 1) return 1;
-  return Math.min(qty, 99);
-}
-
-function clampOptionQty(value, max){
-  const qty = Math.floor(Number(value));
-  if(!Number.isFinite(qty) || qty < 0) return 0;
-  return Math.min(qty, max);
+  if(String(value).trim() === '' || !Number.isFinite(qty)) return fallback;
+  return Math.min(Math.max(qty, min), max);
 }
 
 function rowUnitPrice(qty){
@@ -45,17 +39,27 @@ function getRows(){
   return Array.from(designList.querySelectorAll('.order-design-row'));
 }
 
-function readRow(row, index){
+function maybeWriteNumber(input, value, fallback, commit){
+  const active = document.activeElement === input;
+  const raw = String(input.value).trim();
+  if(!commit && active && raw === '') return;
+  if(!commit && active && raw !== '' && Number.isFinite(Number(raw))) return;
+  if(raw === '' && !commit) return;
+  const next = String(value ?? fallback);
+  if(input.value !== next) input.value = next;
+}
+
+function readRow(row, index, commit=false){
   const nameInput = row.querySelector('.design-name');
   const qtyInput = row.querySelector('.design-qty');
   const colorInput = row.querySelector('.color-qty');
   const keyringInput = row.querySelector('.keyring-qty');
-  const qty = clampQty(qtyInput.value);
-  const colorQty = clampOptionQty(colorInput.value, qty);
-  const keyringQty = clampOptionQty(keyringInput.value, qty);
-  if(String(qtyInput.value) !== String(qty)) qtyInput.value = qty;
-  if(String(colorInput.value) !== String(colorQty)) colorInput.value = colorQty;
-  if(String(keyringInput.value) !== String(keyringQty)) keyringInput.value = keyringQty;
+  const qty = normalizedNumber(qtyInput.value, 1, 99, 1);
+  const colorQty = normalizedNumber(colorInput.value, 0, qty, 0);
+  const keyringQty = normalizedNumber(keyringInput.value, 0, qty, 0);
+  maybeWriteNumber(qtyInput, qty, 1, commit);
+  maybeWriteNumber(colorInput, colorQty, 0, commit);
+  maybeWriteNumber(keyringInput, keyringQty, 0, commit);
   const unit = rowUnitPrice(qty);
   const productTotal = qty * unit;
   const colorTotal = colorQty * COLOR_CHANGE_PRICE;
@@ -145,6 +149,11 @@ function updateCalculator(){
   copySummaryButton.disabled = !items.length || due <= 0;
 }
 
+function finalizeRow(row){
+  readRow(row, getRows().indexOf(row), true);
+  updateCalculator();
+}
+
 function addDesignRow(defaults={}){
   const fragment = rowTemplate.content.cloneNode(true);
   const row = fragment.querySelector('.order-design-row');
@@ -153,7 +162,11 @@ function addDesignRow(defaults={}){
   row.querySelector('.color-qty').value = defaults.colorQty || 0;
   row.querySelector('.keyring-qty').value = defaults.keyringQty || 0;
   row.addEventListener('input', updateCalculator);
-  row.addEventListener('change', updateCalculator);
+  row.addEventListener('change', ()=>finalizeRow(row));
+  row.querySelectorAll('input[type="number"]').forEach(input=>{
+    input.addEventListener('focus', ()=>input.select());
+    input.addEventListener('blur', ()=>finalizeRow(row));
+  });
   row.querySelector('.remove-design').addEventListener('click', ()=>{
     row.remove();
     if(!getRows().length) addDesignRow();
