@@ -17,6 +17,7 @@ const summaryTextEl = document.getElementById('summaryText');
 const copySummaryButton = document.getElementById('copySummary');
 const resetOrderButton = document.getElementById('resetOrder');
 const shippingModeInput = document.getElementById('shippingMode');
+let copyLineText = '';
 
 function won(value){
   return Math.round(value).toLocaleString('ko-KR')+'원';
@@ -63,6 +64,26 @@ function readRow(row, index){
   return {type: PRODUCT_TYPE, name, qty, unit, productTotal, colorQty, colorTotal, keyringQty, keyringTotal, optionTotal, total};
 }
 
+function buildCopyLine(items, shipping, due){
+  let colorQty = 0;
+  let colorTotal = 0;
+  let keyringQty = 0;
+  let keyringTotal = 0;
+  const parts = items.map(item=>`${item.name} ${item.qty}개(${won(item.productTotal)})`);
+
+  items.forEach(item=>{
+    colorQty += item.colorQty;
+    colorTotal += item.colorTotal;
+    keyringQty += item.keyringQty;
+    keyringTotal += item.keyringTotal;
+  });
+
+  parts.push(`색상 변경 ${colorQty}개(${won(colorTotal)})`);
+  parts.push(`키링 추가 ${keyringQty}개(${won(keyringTotal)})`);
+  parts.push(`배송비(${won(shipping)})`);
+  return `${parts.join(' + ')} = 총 ${won(due)}`;
+}
+
 function buildSummary(items, productTotal, optionTotal, shipping, due){
   if(!items.length) return '도안을 추가하면 주문 요약이 표시됩니다.';
   const lines = items.map((item, index)=>{
@@ -72,10 +93,12 @@ function buildSummary(items, productTotal, optionTotal, shipping, due){
     const optionText = options.length ? ` · ${options.join(' · ')}` : '';
     return `${index + 1}. ${item.type} · ${item.name} · 제작 ${item.qty}개${optionText} = ${won(item.total)}`;
   });
-  lines.push(`총 제작 금액: ${won(productTotal)}`);
+  copyLineText = buildCopyLine(items, shipping, due);
+  lines.push(`제작금액: ${won(productTotal)}`);
   lines.push(`옵션 금액: ${won(optionTotal)}`);
   lines.push(`배송비: ${won(shipping)}`);
-  lines.push(`받을 금액: ${won(due)}`);
+  lines.push(`총 금액: ${won(due)}`);
+  lines.push(copyLineText);
   return lines.join('\n');
 }
 
@@ -125,7 +148,7 @@ function addDesignRow(defaults={}){
 }
 
 async function copySummary(){
-  const text = summaryTextEl.textContent;
+  const text = copyLineText;
   if(!text || copySummaryButton.disabled) return;
   try{
     await navigator.clipboard.writeText(text);
